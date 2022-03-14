@@ -1,2 +1,5 @@
-# signalk-bandgZC-plugin
-ZC1/2 remote control
+# ZC1 remote control
+
+Push buttons on the screen.
+
+

@@ -1,0 +1,27 @@
+{
+  "description": "B&G ZC remote control",
+  "keywords": [
+    "signalk-node-server-plugin",
+    "signalk-webapp"
+  ],
+  "license": "ISC",
+  "author": {
+    "name": "Hans Tool"
+  },
+  "main": "plugin/index.js",
+  "name": "signalk-bandg-zc-plugin",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/htool/signalk-bandg-zc-plugin.git"
+  },
+  "author": "hans@defect.org",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/htool/signalk-bandg-zc-plugin/issues"
+  },
+  "homepage": "https://github.com/htool/signalk-bandg-zc-plugin#readme",
+  "dependencies": {
+    "jquery": "^3.6.0"
+  }
+}
