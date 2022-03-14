@@ -10,7 +10,7 @@
   },
   "main": "plugin/index.js",
   "name": "signalk-bandg-zc-plugin",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/htool/signalk-bandg-zc-plugin.git"

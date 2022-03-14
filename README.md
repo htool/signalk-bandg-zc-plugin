@@ -1,6 +1,6 @@
 # ZC1 remote control
 
-Push buttons on the screen.
+![ZC](https://raw.githubusercontent.com/htool/signalk-bandg-zc-plugin/main/public/zc.jpg)
 
 Missing buttons:
  - X
