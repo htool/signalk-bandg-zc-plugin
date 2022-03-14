@@ -10,8 +10,8 @@ var lastButton = "";
 var repeatCounter = 0;
 var buttonTimeoutId;
 
-var mfdAddress = "01";
-var sourceAddress = "99";  // Gets overwritten by candevice
+var mfdAddress = "";
+var sourceAddress = "30";  // Gets overwritten by candevice
 
 // Intervals
 var buttonChartID;
@@ -74,9 +74,9 @@ module.exports = function(app, options) {
   plugin.name = "B&G ZC remote control"
   plugin.description = "Signal K B&G ZC1 remote control server plugin"
 
-  function sendN2k(msg) {
-    app.debug("n2k_msg: %s", msg)
-    app.emit('nmea2000out', msg)
+  function sendN2k(msgs) {
+    app.debug("n2k_msg: " + msgs)
+    msgs.map(function(msg) { app.emit('nmea2000out', msg)})
   }
 
   function announceZC () {
@@ -87,14 +87,14 @@ module.exports = function(app, options) {
       "%s,3,130845,%s,255,0e,41,9f,01,ff,ff,ff,2f,25,00,00,ff,ff,ff,ff,ff,ff,ff,ff,ff,ff" ]
     msgs.forEach(value => {
       var msg = util.format(value, (new Date()).toISOString(), sourceAddress)
-      sendN2k(msg)
+      sendN2k([msg])
     });
   }
 
   function sendButton (button, action) {
-    var msg = util.format(buttonPGN, (new Date()).toISOString(), sourceAddress, mfdAddress, zc_key_code[button], buttonAction[action])
+    var msg = util.format(buttonPGN, (new Date()).toISOString(), sourceAddress, mfdAddress, buttonAction[action], zc_key_code[button])
     if (action == 'pressed') {
-      buttonTimeoutId = setTimeout(sendButton, 300, button, action);
+      buttonTimeoutId = setTimeout(sendButton, 100, button, action);
       repeatCounter++;
     } else {
       if (action == 'released' || repeatCounter > 20) {
@@ -102,7 +102,7 @@ module.exports = function(app, options) {
         repeatCounter = 0;
       }
     }
-    sendN2k(msg)
+    sendN2k([msg])
   }
 
   plugin.schema = function() {
@@ -135,9 +135,10 @@ module.exports = function(app, options) {
     n2kCallback = (msg) => {
       try {
         let fields = msg['fields']
-        if (msg.pgn == "65280") {
+        if (msg.pgn == "65280" && mfdAddress == "") {
           app.debug('[65280]: %s', JSON.stringify(msg));
           app.debug('Maybe MFD on ID: %d', msg.src);
+          mfdAddress = (msg.src).toString(16).padStart(2, '0');
           if (buf2hex(msg.data).join(',') == '13,99,04,05,00,00,02,00') {
             app.debug('Found REAL MFD on ID: %d', msg.src);
           }
