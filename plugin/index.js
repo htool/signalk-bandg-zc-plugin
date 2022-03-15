@@ -5,11 +5,6 @@ var path = require('path');
 var plugin = {}
 var n2kCallback
 
-var buttonPressed = false;
-var lastButton = "";
-var repeatCounter = 0;
-var buttonTimeoutId;
-
 var mfdAddress = "";
 var sourceAddress = "30";  // Gets overwritten by candevice
 
@@ -44,6 +39,8 @@ const zc_key_code = {
     'right':    '4f',
     'menu':     '10',
     'win':      '06',
+    'check':    '28',
+    'cancel':   '29',
     '1':        '1e',
     '2':        '1f',
     '3':        '20',
@@ -92,16 +89,8 @@ module.exports = function(app, options) {
   }
 
   function sendButton (button, action) {
+    app.debug('button: %s, action: %s ', button, action);
     var msg = util.format(buttonPGN, (new Date()).toISOString(), sourceAddress, mfdAddress, buttonAction[action], zc_key_code[button])
-    if (action == 'pressed') {
-      buttonTimeoutId = setTimeout(sendButton, 100, button, action);
-      repeatCounter++;
-    } else {
-      if (action == 'released' || repeatCounter > 20) {
-        clearTimeout(buttonTimeoutId);
-        repeatCounter = 0;
-      }
-    }
     sendN2k([msg])
   }
 
@@ -122,7 +111,6 @@ module.exports = function(app, options) {
 	      res.send(JSON.stringify(req.params))
         var button = req.params.button;
         var action = req.params.action;
-        app.debug('button: %s  action: %s', button, action);
         if (action == 'click') {
           sendButton(button, 'pressed');
           sendButton(button, 'released');
