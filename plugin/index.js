@@ -91,8 +91,8 @@ module.exports = function(app, options) {
         sendN2k([msg,msg])
       }
     } else {
-      if (action == 'released') {
-        if (Date.now() - lastPressTime > 1000) {
+      if (action == 'released' || action == 'longpress') {
+        if (Date.now() - lastPressTime > 1000 || action == 'longpress') {
           // long press
           if (button == 'mob' || button == 'goto' || button == 'power') {
             msg = util.format(buttonPGN, (new Date()).toISOString(), sourceAddress, mfdAddress, zc_key_code['longpress'], zc_key_code[button])
