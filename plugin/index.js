@@ -8,19 +8,15 @@ var n2kCallback
 var mfdAddress = "";
 var sourceAddress = "30";  // Gets overwritten by candevice
 
-// Intervals
-var buttonChartID;
+var lastPressTime;
 
 const zc_key_code = {
-//knob right
-// can0 0CFF3400 [8] 41 9F FE 85 00 00 FF 08
-//know left
-// can0 0CFF3400 [8] 41 9F FE 85 00 00 01 08
+    'press':    'b3',
+    'release':  '33',
+    'longpress':'80',
     'mob':      '1d',
     'zoomin':   '57',
     'zoomout':  '56',
-    'press':    'b3',
-    'release':  '33',
     'display':  '07',
     'stbyauto': '04',
     'power':    '14',
@@ -50,15 +46,13 @@ const zc_key_code = {
     '7':        '24',
     '8':        '25',
     '9':        '26',
-    '0':        '27'
+    '0':        '27',
+    'knobleft': '01',
+    'knobright':'ff'
 }
 
+const knobPGN   = '%s,3,65332,%s,255,8,41,9f,fe,85,00,00,%s,08';
 const buttonPGN = '%s,3,65332,%s,255,8,41,9f,%s,84,0e,32,%s,%s';
-
-var buttonAction = {
-  "pressed" : "33",
-  "released": "b3"
-}
 
 function buf2hex(buffer) { // buffer is an ArrayBuffer
   return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2));
@@ -89,9 +83,45 @@ module.exports = function(app, options) {
   }
 
   function sendButton (button, action) {
-    app.debug('button: %s, action: %s ', button, action);
-    var msg = util.format(buttonPGN, (new Date()).toISOString(), sourceAddress, mfdAddress, buttonAction[action], zc_key_code[button])
-    sendN2k([msg])
+    app.debug('button: %s, action: %s', button, action);
+    var msg;
+    if (button == 'knobleft' || button == 'knobright') {
+      if (action == 'released') {
+        msg = util.format(knobPGN, (new Date()).toISOString(), sourceAddress, zc_key_code[button])
+        sendN2k([msg,msg])
+      }
+    } else {
+      if (action == 'released') {
+        if (Date.now() - lastPressTime > 1000) {
+          // long press
+          if (button == 'mob' || button == 'goto' || button == 'power') {
+            msg = util.format(buttonPGN, (new Date()).toISOString(), sourceAddress, mfdAddress, zc_key_code['longpress'], zc_key_code[button])
+            sendN2k([msg,msg])
+          }
+          if (button == 'plot') {
+            // Bit different, vessel needs press/release
+            msg = util.format(buttonPGN, (new Date()).toISOString(), sourceAddress, mfdAddress, zc_key_code['press'], zc_key_code[button])
+            sendN2k([msg])
+            msg = util.format(buttonPGN, (new Date()).toISOString(), sourceAddress, mfdAddress, zc_key_code['release'], zc_key_code[button])
+            sendN2k([msg])
+          }
+        } else {
+          // short press
+          if (button == 'plot') {
+            // plot requires long press action
+            msg = util.format(buttonPGN, (new Date()).toISOString(), sourceAddress, mfdAddress, zc_key_code['longpress'], zc_key_code[button])
+            sendN2k([msg,msg])
+          } else {
+            // normal short press
+            msg = util.format(buttonPGN, (new Date()).toISOString(), sourceAddress, mfdAddress, zc_key_code['press'], zc_key_code[button])
+            sendN2k([msg])
+            msg = util.format(buttonPGN, (new Date()).toISOString(), sourceAddress, mfdAddress, zc_key_code['release'], zc_key_code[button])
+            sendN2k([msg])
+          }
+        }
+      }
+    }
+    lastPressTime = Date.now();
   }
 
   plugin.schema = function() {
@@ -141,7 +171,6 @@ module.exports = function(app, options) {
 
   plugin.stop = function() {
     app.debug("Stopping")
-    // clearInterval(buttonChartID)
     app.debug("Stopped")
   }
 
