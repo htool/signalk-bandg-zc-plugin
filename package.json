@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/htool/signalk-bandg-zc-plugin#readme",
   "dependencies": {
+    "debug": "^4.3.4",
     "jquery": "^3.6.0"
   }
 }
