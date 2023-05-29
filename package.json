@@ -10,7 +10,7 @@
   },
   "main": "plugin/index.js",
   "name": "signalk-bandg-zc-plugin",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/htool/signalk-bandg-zc-plugin.git"
@@ -21,6 +21,10 @@
     "url": "https://github.com/htool/signalk-bandg-zc-plugin/issues"
   },
   "homepage": "https://github.com/htool/signalk-bandg-zc-plugin#readme",
+  "signalk": {
+    "appIcon": "./signalk-logo.png",
+    "displayName": "B&G ZC1 remote"
+  },
   "dependencies": {
     "debug": "^4.3.4",
     "jquery": "^3.6.0"
