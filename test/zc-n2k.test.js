@@ -10,11 +10,11 @@ function assertJsonPgn(pgn, expectedPgn) {
   assert.equal(pgn.prio, 3)
   assert.equal(pgn.dst, 255)
   assert.equal(pgn['Manufacturer Code'], n2k.NAVICO_MANUFACTURER)
-  assert.equal(typeof pgn, 'object')
   assert.equal(Array.isArray(pgn), false)
+  assert.ok(n2k.toPgn(pgn), 'canboatjs toPgn encodes this PGN')
 }
 
-test('button PGN is JSON 65332 with canboat Function/Key Event names', () => {
+test('button PGN is JSON 65332 built and encoded by canboatjs', () => {
   const pgn = n2k.buttonPgn('1d', 'press', '1')
   assertJsonPgn(pgn, 65332)
   assert.equal(pgn.Address, 0x1d)
@@ -22,6 +22,7 @@ test('button PGN is JSON 65332 with canboat Function/Key Event names', () => {
   assert.equal(pgn.Parameter, n2k.BUTTON_PARAMETER)
   assert.equal(pgn['Key Event'], n2k.KEY_EVENT.press)
   assert.equal(pgn.Key, '1')
+  assert.equal(n2k.toPgn(pgn).toString('hex'), '419f1d840e32b31e')
 })
 
 test('missing MFD address becomes 0xff', () => {
@@ -36,7 +37,9 @@ test('knob PGN uses Function Knob, Ticks, and address 0xfe', () => {
   assert.equal(left.Parameter, 0)
   assert.equal(left.Ticks, 1)
   assert.equal(left.Unknown, n2k.KNOB_UNKNOWN)
+  assert.equal(n2k.toPgn(left).toString('hex'), '419ffe8500000108')
   assert.equal(n2k.knobPgn('knobright').Ticks, -1)
+  assert.equal(n2k.toPgn(n2k.knobPgn('knobright')).toString('hex'), '419ffe850000ff08')
 })
 
 test('short press emits press then release JSON', () => {
@@ -70,7 +73,7 @@ test('announce is four JSON 130845 objects', () => {
   assert.equal(pgns[0].Key, 0x004a2f)
 })
 
-test('custom PGN 65332 is two Simnet ZC variants', () => {
+test('custom PGN 65332 is canboat-derived simnetZcKey and simnetZcKnob', () => {
   const defs = n2k.CUSTOM_PGNS.filter(function (p) {
     return p.PGN === 65332
   })
@@ -86,26 +89,27 @@ test('custom PGN 65332 is two Simnet ZC variants', () => {
   assert.equal(ticks.Signed, true)
 })
 
-function loadCanboatjs() {
-  try {
-    return require('/usr/lib/node_modules/signalk-server/node_modules/@canboat/canboatjs')
-  } catch (e) {
-    return null
-  }
-}
-
-test('canboatjs encodes Simnet key/knob frames from lookup names', { skip: !loadCanboatjs() }, () => {
-  const canboatjs = loadCanboatjs()
-  const { addCustomPgn } = require('/usr/lib/node_modules/signalk-server/node_modules/@canboat/canboatjs/lib/pgns')
-  n2k.CUSTOM_PGNS.forEach(function (def) {
-    addCustomPgn(def)
+test('createPGN builds Simnet ZC key and knob classes', () => {
+  const key = n2k.createPGN('simnetZcKey', {
+    address: 0x1d,
+    parameter: n2k.BUTTON_PARAMETER,
+    keyEvent: 'Press',
+    key: '1'
   })
-  const keyBuf = canboatjs.toPgn(n2k.buttonPgn('1d', 'press', '1'))
-  assert.ok(keyBuf, 'toPgn returned a buffer for key')
-  assert.equal(keyBuf.toString('hex'), '419f1d840e32b31e')
-  const knobBuf = canboatjs.toPgn(n2k.knobPgn('knobleft'))
-  assert.ok(knobBuf, 'toPgn returned a buffer for knob')
-  assert.equal(knobBuf.toString('hex'), '419ffe8500000108')
-  const knobRight = canboatjs.toPgn(n2k.knobPgn('knobright'))
-  assert.equal(knobRight.toString('hex'), '419ffe850000ff08')
+  assert.equal(key.pgn, 65332)
+  assert.equal(key.fields.function, 'Key')
+  assert.equal(n2k.toPgn(key).toString('hex'), '419f1d840e32b31e')
+  const knob = n2k.createPGN('simnetZcKnob', {
+    address: 0xfe,
+    parameter: 0,
+    ticks: 1,
+    unknown: n2k.KNOB_UNKNOWN
+  })
+  assert.equal(knob.fields.function, 'Knob')
+  assert.equal(n2k.toPgn(knob).toString('hex'), '419ffe8500000108')
+})
+
+test('canboatjs toPgn is required to create a key PGN', () => {
+  const pgn = n2k.buttonPgn('0a', 'release', 'mob')
+  assert.equal(n2k.toPgn(pgn).toString('hex'), '419f0a840e32331d')
 })

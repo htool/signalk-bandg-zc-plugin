@@ -37,7 +37,7 @@ GET /plugins/signalk-bandg-zc-plugin/status
 webapp LED: red until mfdFound, then green
 ```
 
-On `plugin.start`, register `canboat-custom-pgns` (`simnetZcKey`, `simnetZcKnob`, 130845 announce) and emit four PGN 130845 JSON objects. Keys are JSON PGN 65332 (`lib/zc-n2k.js`) using canboat field names. Src is unset so the CAN device fills it. Hop Signal K 1.46 encodes that JSON with canboatjs 1.27 `toPgn` via `nmea2000JsonOut`.
+On `plugin.start`, register `canboat-custom-pgns` (`simnetZcKey`, `simnetZcKnob`, 130845 announce) so **SK’s** canboatjs 1.27 can encode. `lib/zc-n2k.js` builds 65332 with canboatjs 3 / `@canboat/ts-pgns` `createPGN` (defs generated from canboat). It flattens to Title-Case JSON for SK 1.27 `nmea2000JsonOut` and only returns a PGN if `toPgn` succeeds. Src is unset so the CAN device fills it.
 
 ## HTTP
 

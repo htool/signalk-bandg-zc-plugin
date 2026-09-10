@@ -54,3 +54,23 @@ Implement in order. One slice per commit unless a slice says otherwise. Stop whe
   - `canboat-custom-pgns` registers `simnetZcKey` and `simnetZcKnob` (stock `@canboat/pgns` 1.4.2 has no 65332).
   - Tests cover names, both custom defs, and canboatjs encode of sample frames when SK's canboatjs is present.
 - **Out of scope:** waiting for published `@canboat/pgns` / `@canboat/ts-pgns`, version bump.
+
+## 6. Create PGNs with canboatjs toPgn
+
+- **Status:** done
+- **Outcome:** Key/knob/announce JSON is filled from the registered canboatjs PGN defs and only returned if `toPgn` succeeds.
+- **Done when:**
+  - Plugin depends on `@canboat/canboatjs` (1.27, same major as hop SK).
+  - `lib/zc-n2k.js` calls `addCustomPgn` then `toPgn`; Match fields come from the def, not duplicated in `buttonPgn`.
+  - Tests encode sample frames via the plugin’s canboatjs, not a hardcoded SK path.
+- **Out of scope:** upgrading hop SK to canboatjs 3.x / `createPGN` classes, version bump.
+
+## 7. createPGN from canboat-derived canboatjs 3
+
+- **Status:** done
+- **Outcome:** PGN 65332 objects are created with `createPGN`, using ts-pgns generated from canboat. The plugin no longer owns the 65332 field layout.
+- **Done when:**
+  - Plugin depends on canboatjs 3.x + `@canboat/ts-pgns` (`file:../canboatjs-simnet-65332`, `file:../ts-pgns` until npm publishes Simnet 65332).
+  - `lib/zc-n2k.js` calls `createPGN('simnetZcKey'|'simnetZcKnob')` then `toPgn`; HTTP button names still map to canboat lookup strings.
+  - Tests cover `createPGN` classes and the same sample hex as canboat (`419f1d840e32b31e`, knob `419ffe8500000108` / `419ffe850000ff08`).
+- **Out of scope:** publishing ts-pgns, replacing SK’s nested canboatjs 1.27, changing 130845 announce layout, version bump.

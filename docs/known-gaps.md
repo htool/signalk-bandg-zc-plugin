@@ -7,5 +7,7 @@
 - **`chart` and `radar` share key code `1a`.**
 - **`plugin.stop`** does not remove the `N2KAnalyzerOut` listener.
 - **Live N2K / Zeus** is not in `npm test`. Unit tests cover layout scale, press offset, and LED colour.
-- **Canboat PGN 65332** in published `@canboat/pgns` 1.4.2 is missing; canboat C (PR 874) has Simnet ZC Key/Knob plus Yanmar. This plugin registers `simnetZcKey` / `simnetZcKnob` via `canboat-custom-pgns` ([ADR 001](adr/001-json-n2k-out.md)) until `@canboat/pgns` / `@canboat/ts-pgns` publish those defs.
+- **Published ts-pgns 1.11.18** still has no Simnet 65332. The plugin uses local `file:../ts-pgns` and `file:../canboatjs-simnet-65332` (canboat-derived `createPGN`). GitHub CI `npm install` needs those sibling checkouts, or a published ts-pgns.
+- **Hop SK 1.46.3** still encodes `nmea2000JsonOut` with canboatjs **1.27**. Replacing that nested package with 3.x is not this plugin’s job (`@signalk/streams` pins `^1.4.0`). `canboat-custom-pgns` stays.
+- **PGN 130845 announce** is not canboat `simnetKeyValue` (different fields). Do not remap announce onto that def in a 65332 slice.
 - **Zeus / IE11:** no optional chaining in `public/`. No `aspect-ratio` / `clip-path` requirement for keys (bounding boxes).

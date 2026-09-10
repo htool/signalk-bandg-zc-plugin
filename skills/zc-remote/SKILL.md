@@ -12,7 +12,7 @@ Read [AGENTS.md](../../AGENTS.md) first. Next slice is [docs/features.md](../../
 
 ## Do
 
-- Emit NMEA as JSON: `app.emit('nmea2000JsonOut', pgn)` from `lib/zc-n2k.js` using canboat names (`Function` Key/Knob, `Key Event` lookups, knob `Ticks`). Register `canboat-custom-pgns` (`simnetZcKey`, `simnetZcKnob`). Do not emit HEX `nmea2000out`.
+- Emit NMEA as JSON: `app.emit('nmea2000JsonOut', pgn)` from `lib/zc-n2k.js`. Create 65332 with canboatjs 3 / ts-pgns `createPGN` (defs generated from canboat). Also `canboat-custom-pgns` so SK 1.27 can encode. Do not emit HEX `nmea2000out`.
 - Put layout and LED math in `public/zc-ui.js`. `PRESS_OFFSET_PX` is **3**. Faceplate is `public/control-panel.jpg` (1807×1103). Scale old 875×535 image-map coords; do not treat zip folder names as labels.
 - Keep `knobleft` / `knobright` as hit areas.
 - LED: panel pixels 213,187–269,212; red until `GET .../status` has `mfdFound`, then green.
