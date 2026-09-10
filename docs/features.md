@@ -74,3 +74,13 @@ Implement in order. One slice per commit unless a slice says otherwise. Stop whe
   - `lib/zc-n2k.js` calls `createPGN('simnetZcKey'|'simnetZcKnob')` then `toPgn`; HTTP button names still map to canboat lookup strings.
   - Tests cover `createPGN` classes and the same sample hex as canboat (`419f1d840e32b31e`, knob `419ffe8500000108` / `419ffe850000ff08`).
 - **Out of scope:** publishing ts-pgns, replacing SK’s nested canboatjs 1.27, changing 130845 announce layout, version bump.
+
+## 8. CI uses npm canboatjs 3 (no file: siblings)
+
+- **Status:** done
+- **Outcome:** GitHub `npm test` installs `@canboat/canboatjs` 3 from npm. Simnet 65332 defs come from `lib/simnet-zc.json` (canboat PR 874) until ts-pgns publishes them.
+- **Done when:**
+  - `package.json` has no `file:../canboatjs-simnet-65332` / `file:../ts-pgns`.
+  - `npm install && npm test` works without sibling checkouts.
+  - Sample hex tests still pass.
+- **Out of scope:** publishing ts-pgns, version bump.
