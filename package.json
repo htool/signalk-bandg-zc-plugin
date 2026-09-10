@@ -11,6 +11,9 @@
   "main": "plugin/index.js",
   "name": "signalk-bandg-zc-plugin",
   "version": "0.0.9",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/htool/signalk-bandg-zc-plugin.git"
