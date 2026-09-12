@@ -5,18 +5,17 @@
     "signalk-webapp"
   ],
   "license": "ISC",
-  "author": {
-    "name": "Hans Tool"
-  },
+  "author": "hans@defect.org",
   "main": "plugin/index.js",
   "name": "signalk-bandg-zc-plugin",
   "version": "0.0.9",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/htool/signalk-bandg-zc-plugin.git"
   },
-  "author": "hans@defect.org",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/htool/signalk-bandg-zc-plugin/issues"
   },
@@ -26,7 +25,8 @@
     "displayName": "B&G ZC1 remote"
   },
   "dependencies": {
-    "debug": "^4.3.4",
-    "jquery": "^3.6.0"
+    "@canboat/canboatjs": "^3.20.0",
+    "@canboat/ts-pgns": "^1.11.18",
+    "debug": "^4.3.4"
   }
 }
