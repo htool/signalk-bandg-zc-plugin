@@ -4,7 +4,7 @@
       "PGN": 65332,
       "Id": "simnetZcKey",
       "Description": "Simnet: ZC1/OP40 Key",
-      "Explanation": "Manufacturer-proprietary single frame used by B&G ZC1 / Simrad OP40 style remotes (and software that emulates them) to send a key to an MFD. Manufacturer Code 1857 (Simrad) distinguishes this from Yanmar Engine Data C on PGN 65332. Function 0x84 is a keypad key; 0x85 is the rotary encoder (see simnetZcKnob). Parameter is 0x320E on every observed key frame; meaning unknown. Several key codes match USB HID keyboard usages (digits 0x1E-0x27, arrows 0x4F-0x52, Enter/Escape 0x28/0x29) but MOB/Display/etc. are Navico specific. Radar uses the same key code as Chart (0x1A).\n",
+      "Explanation": "Manufacturer-proprietary single frame used by B&G ZC1 / Simrad OP40 style remotes (and software that emulates them) to send a key to an MFD. Manufacturer Code 1857 (Simrad) distinguishes this from Yanmar Engine Data C on PGN 65332. Function 0x84 is a keypad key; 0x85 is the rotary encoder (see simnetZcKnob). Parameter is 0x320E on every observed key frame; meaning unknown. Several key codes match USB HID keyboard usages (digits 0x1E-0x27, arrows 0x4F-0x52, Enter/Escape 0x28/0x29) but MOB/Display/etc. are Navico specific. On a Zeus3S 12, Radar is 0x08 (not Chart 0x1A) and Pages is 19 (0x13); canboat master still lists Pages as 13.\n",
       "Type": "Single",
       "Complete": false,
       "Missing": [
@@ -286,6 +286,94 @@
           "FieldType": "NUMBER"
         }
       ]
+    },
+    {
+      "PGN": 65280,
+      "Id": "navicoDeviceStatus",
+      "Description": "Navico: Device Status",
+      "Explanation": "Low-rate proprietary status broadcast seen from Navico/B&G/Simrad devices (MFDs, autopilots). The first payload byte distinguishes the sender's software platform - NOS-generation devices emit it at about 4 Hz, NEON-generation devices far less often. The remaining bytes are constant in all observed traffic, so their meaning is not yet known.",
+      "Type": "Single",
+      "Complete": false,
+      "Missing": [
+        "Fields",
+        "FieldLengths",
+        "Resolution",
+        "Interval"
+      ],
+      "FieldCount": 5,
+      "Length": 8,
+      "Fields": [
+        {
+          "Order": 1,
+          "Id": "manufacturerCode",
+          "Name": "Manufacturer Code",
+          "Description": "Navico",
+          "BitLength": 11,
+          "BitOffset": 0,
+          "BitStart": 0,
+          "Match": 275,
+          "Resolution": 1,
+          "Signed": false,
+          "RangeMin": 0,
+          "RangeMax": 2044,
+          "FieldType": "LOOKUP",
+          "LookupEnumeration": "MANUFACTURER_CODE"
+        },
+        {
+          "Order": 2,
+          "Id": "reserved",
+          "Name": "Reserved",
+          "BitLength": 2,
+          "BitOffset": 11,
+          "BitStart": 3,
+          "Resolution": 1,
+          "FieldType": "RESERVED"
+        },
+        {
+          "Order": 3,
+          "Id": "industryCode",
+          "Name": "Industry Code",
+          "Description": "Marine Industry",
+          "BitLength": 3,
+          "BitOffset": 13,
+          "BitStart": 5,
+          "Match": 4,
+          "Resolution": 1,
+          "Signed": false,
+          "RangeMin": 0,
+          "RangeMax": 6,
+          "FieldType": "LOOKUP",
+          "LookupEnumeration": "INDUSTRY_CODE"
+        },
+        {
+          "Order": 4,
+          "Id": "reportType",
+          "Name": "Report Type",
+          "Description": "Tracks the emitting device's software platform: 4 = NOS, 5 = NEON. NOS devices broadcast this roughly four times a second, NEON devices at a much lower rate.",
+          "BitLength": 8,
+          "BitOffset": 16,
+          "BitStart": 0,
+          "Resolution": 1,
+          "Signed": false,
+          "RangeMin": 0,
+          "RangeMax": 252,
+          "UnknownValue": 255,
+          "OutOfRangeValue": 254,
+          "ReservedValue": 253,
+          "FieldType": "NUMBER"
+        },
+        {
+          "Order": 5,
+          "Id": "data",
+          "Name": "Data",
+          "Description": "Payload; constant in all observed traffic",
+          "BitLength": 40,
+          "BitOffset": 24,
+          "BitStart": 0,
+          "Resolution": 1,
+          "FieldType": "BINARY"
+        }
+      ]
     }
   ],
   "LookupEnumerations": [
@@ -320,12 +408,16 @@
           "Value": 7
         },
         {
+          "Name": "Radar",
+          "Value": 8
+        },
+        {
           "Name": "Goto",
           "Value": 10
         },
         {
           "Name": "Pages",
-          "Value": 13
+          "Value": 19
         },
         {
           "Name": "Menu",
@@ -456,5 +548,5 @@
       ]
     }
   ],
-  "source": "canboat/canboat docs/canboat.json after PR 874 (e714ad4), master ee4b095"
+  "source": "canboat/canboat docs/canboat.json after PR 874 (e714ad4), master ee4b095; Radar=8 and Pages=19 from Zeus3S 12 live 65332 2026-09-10"
 }

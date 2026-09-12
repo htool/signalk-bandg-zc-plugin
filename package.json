@@ -27,7 +27,6 @@
   "dependencies": {
     "@canboat/canboatjs": "^3.20.0",
     "@canboat/ts-pgns": "^1.11.18",
-    "debug": "^4.3.4",
-    "jquery": "^3.6.0"
+    "debug": "^4.3.4"
   }
 }

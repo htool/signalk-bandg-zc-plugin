@@ -27,7 +27,7 @@ Implement in order. One slice per commit unless a slice says otherwise. Stop whe
 - **Status:** done
 - **Outcome:** Status LED (bar under “1”, top-left) starts red and turns green when an MFD is found.
 - **Done when:**
-  - `GET /plugins/signalk-bandg-zc-plugin/status` returns `{ mfdFound: mfdAddress !== "", mfdAddress }`.
+  - `GET /signalk/v1/api/signalk-bandg-zc-plugin/status` returns `{ mfdFound: mfdAddress !== "", mfdAddress }` (readonly API; `/plugins/.../status` is admin-only on SK 2.x).
   - LED box is panel pixels `213,187 – 269,212`.
   - Webapp polls status; LED red until `mfdFound`, then green.
   - Tests cover LED box and colour from `mfdFound`.
@@ -84,3 +84,33 @@ Implement in order. One slice per commit unless a slice says otherwise. Stop whe
   - `npm install && npm test` works without sibling checkouts.
   - Sample hex tests still pass.
 - **Out of scope:** publishing ts-pgns, version bump.
+
+## 9. Do not shadow lighting 130845; decode Navico 65280
+
+- **Status:** done
+- **Outcome:** SK canboatjs still encodes Navico display lighting. ZC LED can see Zeus PGN 65280.
+- **Done when:**
+  - `canboat-custom-pgns` is `simnetZcKey`, `simnetZcKnob`, `navicoDeviceStatus` only (no 130845).
+  - `lib/simnet-zc.json` includes canboat `navicoDeviceStatus` (manufacturer 275).
+  - Tests: custom list, FromPgn of `13,99,04,05,00,00,02,00` → src 31.
+- **Out of scope:** remapping announce onto `simnetKeyValue`, version bump, changing how `mfdAddress` is chosen.
+
+## 10. Webapp XHR + numeric 65332 lookups for SK 3.5.3
+
+- **Status:** done
+- **Outcome:** ZC webapp polls LED and sends keys without jQuery. SK 2.31 canboatjs encodes Press/Key bytes correctly.
+- **Done when:**
+  - `public/index.html` uses `XMLHttpRequest` (IE11). No `/jquery/` script.
+  - Flattened 65332 JSON uses lookup numbers (`Key Event` 179, `Key` 30 for `"1"`). Sample hex still `419f1d840e32b31e`.
+- **Out of scope:** version bump.
+
+## 11. Zeus-live Radar and Pages key bytes
+
+- **Status:** done
+- **Outcome:** Radar and Pages keys match this Zeus3S 12 (not canboat’s Chart/Pages=13 guesses).
+- **Done when:**
+  - `radar` encodes Key **8** (`0x08`), not Chart 26.
+  - `pages` encodes Key **19** (`0x13`), not 13 (`0x0D`).
+  - `chart` stays 26 (`0x1A`).
+  - Tests cover those three hex frames.
+- **Out of scope:** canboat upstream lookup PR, version bump.

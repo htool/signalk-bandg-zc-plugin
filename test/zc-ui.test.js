@@ -83,6 +83,9 @@ test('LED starts red, green when mfdFound', () => {
 })
 
 test('status and key URLs', () => {
-  assert.equal(ui.statusUrl(), '/plugins/signalk-bandg-zc-plugin/status')
-  assert.equal(ui.keyUrl('1', 'pressed'), '/plugins/signalk-bandg-zc-plugin/key/1/pressed')
+  assert.equal(ui.statusUrl(), '/signalk/v1/api/signalk-bandg-zc-plugin/status')
+  assert.equal(
+    ui.keyUrl('1', 'pressed'),
+    '/signalk/v1/api/signalk-bandg-zc-plugin/key/1/pressed'
+  )
 })

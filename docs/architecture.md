@@ -30,14 +30,16 @@ N2KAnalyzerOut PGN 65280 (first only)
 mfdAddress = src as 2-digit hex
         │
         ▼
-GET /plugins/signalk-bandg-zc-plugin/status
+GET /signalk/v1/api/signalk-bandg-zc-plugin/status
         → { mfdFound: mfdAddress !== "", mfdAddress }
         │
         ▼
 webapp LED: red until mfdFound, then green
 ```
 
-On `plugin.start`, register `canboat-custom-pgns` (`simnetZcKey`, `simnetZcKnob`, 130845 announce) so **SK’s** canboatjs 1.27 can encode. `lib/zc-n2k.js` builds 65332 with canboatjs 3 `toPgn` (ts-pgns `createPGN` when present, else `lib/simnet-zc.json` from canboat PR 874). It flattens to Title-Case JSON for SK 1.27 `nmea2000JsonOut`. Src is unset so the CAN device fills it.
+HTTP button `radar` is Key **8**; `pages` is **19** (`0x13`); `chart` is **26**. Those Radar/Pages bytes are from this Zeus3S 12; canboat master still has Pages=13 and no Radar.
+
+On `plugin.start`, register `canboat-custom-pgns` (`simnetZcKey`, `simnetZcKnob`, `navicoDeviceStatus`) so **SK’s** canboatjs can encode 65332 and decode Navico PGN 65280. Flattened JSON uses **numeric** lookup values (`Key Event` 179, `Key` 30) because SK 2.x canboatjs 3.5.3 does not resolve custom lookup names. Do **not** register the ZC 130845 announce def there: SK prepends custom defs, which shadows canboat `simnetKeyValue` and breaks `signalk-n2k-displays` / `signalk-to-nmea2000` lighting encode. Announce still uses the plugin’s own canboatjs `toPgn` and `nmea2000JsonOut`. `lib/zc-n2k.js` builds 65332 with canboatjs 3 `toPgn` (ts-pgns `createPGN` when present, else `lib/simnet-zc.json`). Src is unset so the CAN device fills it.
 
 ## HTTP
 
@@ -45,8 +47,9 @@ Routes are assigned on `plugin.registerWithRouter` **inside** `plugin.start` (se
 
 | Method | Path | Result |
 |---|---|---|
-| GET | `/plugins/signalk-bandg-zc-plugin/key/:button/:action` | JSON echo of params; side effect `sendButton` |
-| GET | `/plugins/signalk-bandg-zc-plugin/status` | `{ mfdFound, mfdAddress }` |
+| GET | `/signalk/v1/api/signalk-bandg-zc-plugin/key/:button/:action` | JSON echo of params; side effect `sendButton` (readonly SK API, no admin) |
+| GET | `/signalk/v1/api/signalk-bandg-zc-plugin/status` | `{ mfdFound, mfdAddress }` (readonly SK API) |
+| GET | `/plugins/signalk-bandg-zc-plugin/status` | same JSON; SK 2.x requires admin |
 
 `action` is `pressed`, `released`, `longpress`, or `click` (pressed then released).
 

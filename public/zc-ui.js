@@ -131,11 +131,11 @@
   }
 
   function statusUrl() {
-    return '/plugins/signalk-bandg-zc-plugin/status'
+    return '/signalk/v1/api/signalk-bandg-zc-plugin/status'
   }
 
   function keyUrl(button, action) {
-    return '/plugins/signalk-bandg-zc-plugin/key/' + button + '/' + action
+    return '/signalk/v1/api/signalk-bandg-zc-plugin/key/' + button + '/' + action
   }
 
   function applyStyle(el, style) {

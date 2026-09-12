@@ -1,13 +1,8 @@
 const n2k = require('../lib/zc-n2k')
 
 var n2kCallback
-
 var mfdAddress = ""
 var lastPressTime = 0
-
-function buf2hex(buffer) {
-  return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2));
-}
 
 module.exports = function(app, options) {
   "use strict"
@@ -30,8 +25,35 @@ module.exports = function(app, options) {
     lastPressTime = now
   }
 
+  function handleStatus(req, res) {
+    res.contentType("application/json")
+    res.send(JSON.stringify({
+      mfdFound: mfdAddress !== "",
+      mfdAddress: mfdAddress
+    }))
+  }
+
+  function handleKey(req, res) {
+    res.contentType("application/json")
+    res.send(JSON.stringify(req.params))
+    var button = req.params.button
+    var action = req.params.action
+    if (action == 'click') {
+      sendButton(button, 'pressed')
+      sendButton(button, 'released')
+    } else {
+      sendButton(button, action)
+    }
+  }
+
   plugin.schema = function() {
     return {};
+  }
+
+  plugin.signalKApiRoutes = function(router) {
+    router.get('/signalk-bandg-zc-plugin/status', handleStatus)
+    router.get('/signalk-bandg-zc-plugin/key/:button/:action', handleKey)
+    return router
   }
 
   plugin.start = function(options, restartPlugin) {
@@ -45,36 +67,17 @@ module.exports = function(app, options) {
 
     plugin.registerWithRouter = function(router) {
 	    app.debug("registerWithRouter")
-	    router.get("/status", function(req, res) {
-	      res.contentType("application/json")
-	      res.send(JSON.stringify({
-	        mfdFound: mfdAddress !== "",
-	        mfdAddress: mfdAddress
-	      }))
-	    })
-	    router.get("/key/:button/:action", (req, res) => {
-	      res.contentType("application/json")
-	      res.send(JSON.stringify(req.params))
-        var button = req.params.button;
-        var action = req.params.action;
-        if (action == 'click') {
-          sendButton(button, 'pressed');
-          sendButton(button, 'released');
-        } else {
-          sendButton(button, action);
-        }
-	    })
+	    router.get("/status", handleStatus)
+	    router.get("/key/:button/:action", handleKey)
 	  }
 
     n2kCallback = (msg) => {
       try {
-        if (msg.pgn == "65280" && mfdAddress == "") {
+        var pgn = msg && msg.pgn
+        if ((pgn == 65280 || pgn == '65280') && mfdAddress == "") {
           app.debug('[65280]: %s', JSON.stringify(msg));
           app.debug('Maybe MFD on ID: %d', msg.src);
           mfdAddress = (msg.src).toString(16).padStart(2, '0');
-          if (buf2hex(msg.data).join(',') == '13,99,04,05,00,00,02,00') {
-            app.debug('Found REAL MFD on ID: %d', msg.src);
-          }
         }
       } catch (e) {
         console.error(e)

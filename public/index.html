@@ -8,7 +8,6 @@
   <META name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <META name="navico-store" content="mfd-insight-store">
   <title>ZC1 remote control</title>
-  <script type="text/javascript" src="/jquery/dist/jquery.min.js"></script>
   <script type="text/javascript" src="zc-ui.js"></script>
   <style>
     body {
@@ -62,21 +61,40 @@
   <img class="zc-faceplate" src="control-panel.jpg" alt="B&amp;G ZC1 remote">
 </div>
 <script>
+function getJson(url, onOk) {
+  var xhr = new XMLHttpRequest()
+  xhr.open('GET', url, true)
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) {
+      return
+    }
+    if (xhr.status < 200 || xhr.status >= 300) {
+      return
+    }
+    var data = xhr.responseText
+    try {
+      data = JSON.parse(xhr.responseText)
+    } catch (e) {}
+    if (onOk) {
+      onOk(data)
+    }
+  }
+  xhr.send()
+}
+
 function sendKey(button, action) {
-  $.get(ZcUi.keyUrl(button, action), function (data, status) {
-    console.log("Data: " + data + "\nStatus: " + status);
-  });
+  getJson(ZcUi.keyUrl(button, action))
 }
 
 function paintLed(data) {
-  var led = document.getElementById("zc-led");
+  var led = document.getElementById("zc-led")
   if (led) {
-    led.style.background = ZcUi.ledColorFromStatus(data);
+    led.style.background = ZcUi.ledColorFromStatus(data)
   }
 }
 
 function pollStatus() {
-  $.get(ZcUi.statusUrl(), paintLed);
+  getJson(ZcUi.statusUrl(), paintLed)
 }
 
 var panel = document.getElementById("zc-panel");

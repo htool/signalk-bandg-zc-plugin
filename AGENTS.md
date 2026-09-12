@@ -18,7 +18,7 @@ Follow [Signal K AI approach](https://github.com/htool/signalk-ai-approach). Do 
 
 | Repo | Role |
 | --- | --- |
-| This plugin | ZC1/OP40 lookalike webapp; `GET /plugins/signalk-bandg-zc-plugin/key/:button/:action` → `app.emit('nmea2000JsonOut')` PGN 65332. First PGN 65280 sets `mfdAddress`. |
+| This plugin | ZC1/OP40 lookalike webapp; `GET /signalk/v1/api/signalk-bandg-zc-plugin/key/:button/:action` → `app.emit('nmea2000JsonOut')` PGN 65332. First PGN 65280 sets `mfdAddress`. |
 | signalk-to-nmea2000 / signalk-n2k-displays | Display brightness/mode on N2K, not keypad keys |
 | signalk-naviop-plugin | NAVIOP switch PGNs |
 | signalk-mfd-plugin | Extra Zeus tiles, not the ZC faceplate |
