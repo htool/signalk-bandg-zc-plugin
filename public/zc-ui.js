@@ -39,10 +39,48 @@
     { id: 'down', shape: 'rect', coords: [656, 368, 714, 411] },
     { id: 'left', shape: 'rect', coords: [610, 313, 654, 363] },
     { id: 'right', shape: 'rect', coords: [718, 310, 760, 364] },
-    { id: 'knobpush', shape: 'circle', coords: [692, 121, 43] },
-    { id: 'knobleft', shape: 'poly', coords: [684, 46, 650, 57, 621, 82, 612, 116, 612, 141, 619, 168, 639, 188, 659, 206, 669, 177, 642, 158, 632, 126, 636, 100, 658, 72, 686, 64] },
-    { id: 'knobright', shape: 'poly', coords: [692, 46, 725, 54, 757, 73, 765, 105, 767, 138, 759, 165, 736, 190, 719, 203, 698, 210, 698, 184, 725, 173, 746, 150, 751, 123, 743, 98, 723, 77, 691, 64] }
+    { id: 'knobleft', shape: 'rect', coords: [616, 45, 692, 197] },
+    { id: 'knobright', shape: 'rect', coords: [692, 45, 768, 197] },
+    { id: 'knobpush', shape: 'circle', coords: [692, 121, 43] }
   ]
+
+  var MAPPED_KEYS = {
+    mob: 1,
+    display: 1,
+    zoomin: 1,
+    zoomout: 1,
+    check: 1,
+    cancel: 1,
+    plot: 1,
+    goto: 1,
+    '1': 1,
+    '2': 1,
+    '3': 1,
+    '4': 1,
+    '5': 1,
+    '6': 1,
+    '7': 1,
+    '8': 1,
+    '9': 1,
+    '0': 1,
+    stbyauto: 1,
+    power: 1,
+    radar: 1,
+    echo: 1,
+    chart: 1,
+    nav: 1,
+    info: 1,
+    pages: 1,
+    menu: 1,
+    win: 1,
+    up: 1,
+    down: 1,
+    left: 1,
+    right: 1,
+    knobpush: 1,
+    knobleft: 1,
+    knobright: 1
+  }
 
   function scaleX(n) {
     return n * PANEL_WIDTH / OLD_WIDTH
@@ -85,7 +123,16 @@
   }
 
   function keyBox(key) {
-    return scaleBox(boundingBox(key.shape, key.coords))
+    var box = scaleBox(boundingBox(key.shape, key.coords))
+    var d
+    if (key.shape === 'circle') {
+      d = (box.w + box.h) / 2
+      box.x -= (d - box.w) / 2
+      box.y -= (d - box.h) / 2
+      box.w = d
+      box.h = d
+    }
+    return box
   }
 
   function ledBox() {
@@ -138,6 +185,37 @@
     return '/signalk/v1/api/signalk-bandg-zc-plugin/key/' + button + '/' + action
   }
 
+  function keyIsMapped(id) {
+    return MAPPED_KEYS[id] === 1
+  }
+
+  function keyById(id) {
+    var i
+    for (i = 0; i < KEYS.length; i++) {
+      if (KEYS[i].id === id) {
+        return KEYS[i]
+      }
+    }
+  }
+
+  function wellClassName(id, pressed) {
+    var cls = 'zc-well'
+    var key = keyById(id)
+    if (!keyIsMapped(id)) {
+      cls += ' is-unmapped'
+    }
+    if (id === 'knobleft' || id === 'knobright') {
+      cls += ' is-dial'
+    }
+    if (key && key.shape === 'circle') {
+      cls += ' is-circle'
+    }
+    if (pressed) {
+      cls += ' is-pressed'
+    }
+    return cls
+  }
+
   function applyStyle(el, style) {
     var k
     for (k in style) {
@@ -157,7 +235,7 @@
         ev.preventDefault()
       }
       down = true
-      well.className = 'zc-well is-pressed'
+      well.className = wellClassName(button, true)
       if (faceEl()) {
         faceEl().style.transform = pressTransform()
       }
@@ -171,7 +249,7 @@
         ev.preventDefault()
       }
       down = false
-      well.className = 'zc-well'
+      well.className = wellClassName(button)
       if (faceEl()) {
         faceEl().style.transform = ''
       }
@@ -199,7 +277,7 @@
       key = KEYS[i]
       box = keyBox(key)
       well = document.createElement('div')
-      well.className = 'zc-well'
+      well.className = wellClassName(key.id)
       well.setAttribute('data-key', key.id)
       applyStyle(well, wellStyle(box))
       face = document.createElement('img')
@@ -208,7 +286,9 @@
       face.alt = ''
       applyStyle(face, faceStyle(box))
       well.appendChild(face)
-      bindPress(well, key.id, send)
+      if (keyIsMapped(key.id)) {
+        bindPress(well, key.id, send)
+      }
       panel.appendChild(well)
     }
 
@@ -229,6 +309,10 @@
     PRESS_OFFSET_PX: PRESS_OFFSET_PX,
     LED_BBOX: LED_BBOX,
     KEYS: KEYS,
+    MAPPED_KEYS: MAPPED_KEYS,
+    keyIsMapped: keyIsMapped,
+    keyById: keyById,
+    wellClassName: wellClassName,
     scaleX: scaleX,
     scaleY: scaleY,
     boundingBox: boundingBox,

@@ -114,3 +114,42 @@ Implement in order. One slice per commit unless a slice says otherwise. Stop whe
   - `chart` stays 26 (`0x1A`).
   - Tests cover those three hex frames.
 - **Out of scope:** canboat upstream lookup PR, version bump.
+
+## 12. Grey out unmapped keys
+
+- **Status:** done
+- **Outcome:** Faceplate keys with no PGN 65332 key mapping look disabled and ignore pointer events, so it is obvious what works.
+- **Done when:**
+  - `public/zc-ui.js` `keyIsMapped(id)` is true iff `lib/zc-n2k.js` `KEY_NAME` has that id (knob turn hit areas are not mapped).
+  - Unmapped wells use class `is-unmapped`, skip `bindPress`, and do not call `send`.
+  - CSS greys the well (`:after` wash, no `cursor: pointer`) and `pointer-events: none`.
+  - Tests compare mapped KEYS to `KEY_NAME` (`node --test`).
+- **Out of scope:** inventing knob-turn encoding, version bump.
+
+## 13. STBY/AUTO press on the autopilot panel
+
+- **Status:** superseded by 14
+- **Outcome:** Sending ZC Key 4 did not drive the AP. Replaced by 130850 Standby/Heading.
+- **Out of scope:** version bump.
+
+## 14. STBY/AUTO is Simnet AP Standby/Heading
+
+- **Status:** done
+- **Outcome:** STBY/AUTO listens to PGN 65305 Mode on the bus and emits the same 130850 AP-group buttons as `RaymarineAPtoFakeNavicoAutoPilot` (Standby 0x06 / Heading 0x09).
+- **Done when:**
+  - `stbyauto` `pressed` emits one PGN **130850** (not 65332). If `apState` is `auto` → Event **6** Standby; otherwise Event **9** Heading. Address is the AC `src`. Release does not emit.
+  - 12-byte encode matches canboat samples `41,9f,<ac>,ff,ff,0a,06,00,ff,ff,ff,ff` / `...0a,09,00...`.
+  - `pilotStateFrom65305` maps Mode bitfield / names to `standby` | `auto`.
+  - `canboat-custom-pgns` includes Event-Match 6 and 9 only (not a catch-all 130850, not 130845).
+  - Tests cover toggle, hex, and 65305 parse (`node --test`).
+- **Out of scope:** wind/nav/tack 130850, Seatalk 126720 TX, greying IN/OUT, version bump.
+
+## 15. Dial turns are Up/Down keys
+
+- **Status:** done
+- **Outcome:** The top-right dial is clickable and sends the same PGN 65332 keys as Up/Down, matching ZC2 firmware and the focused Zeus window (right instrument column).
+- **Done when:**
+  - `knobleft` / `knobright` are mapped (not greyed). They emit the same 65332 frames as `up` (Key **82**) / `down` (Key **81**).
+  - Center `knobpush` is a round well (`border-radius: 50%`, stacked on top of the halves) and still Key **88**.
+  - Tests cover that alias and the round/half layout (`node --test`).
+- **Out of scope:** detecting the focused Zeus window to switch dial→zoom, emitting Function Knob ticks (`0x85`) for this, version bump.

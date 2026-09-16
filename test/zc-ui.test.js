@@ -89,3 +89,42 @@ test('status and key URLs', () => {
     '/signalk/v1/api/signalk-bandg-zc-plugin/key/1/pressed'
   )
 })
+
+test('mapped keys match KEY_NAME plus dial turns', () => {
+  const n2k = require('../lib/zc-n2k')
+  const mappedIds = ui.KEYS.filter(function (k) {
+    return ui.keyIsMapped(k.id)
+  })
+    .map(function (k) {
+      return k.id
+    })
+    .sort()
+  const namedIds = Object.keys(n2k.KEY_NAME).concat(Object.keys(n2k.DIAL_KEY)).sort()
+  assert.deepEqual(mappedIds, namedIds)
+  assert.equal(ui.keyIsMapped('1'), true)
+  assert.equal(ui.keyIsMapped('knobpush'), true)
+  assert.equal(ui.keyIsMapped('knobleft'), true)
+  assert.equal(ui.keyIsMapped('knobright'), true)
+  assert.equal(ui.wellClassName('1'), 'zc-well')
+  assert.equal(ui.wellClassName('knobleft'), 'zc-well is-dial')
+  assert.equal(ui.wellClassName('knobright'), 'zc-well is-dial')
+  assert.equal(ui.wellClassName('knobpush'), 'zc-well is-circle')
+  assert.equal(ui.wellClassName('knobpush', true), 'zc-well is-circle is-pressed')
+})
+
+test('dial is left/right halves with a round push on top', () => {
+  const push = ui.keyById('knobpush')
+  const left = ui.keyById('knobleft')
+  const right = ui.keyById('knobright')
+  const ids = ui.KEYS.map(function (k) { return k.id })
+  assert.equal(push.shape, 'circle')
+  assert.equal(push.coords[0], 692)
+  assert.equal(push.coords[1], 121)
+  assert.equal(push.coords[2], 43)
+  assert.equal(left.shape, 'rect')
+  assert.equal(right.shape, 'rect')
+  assert.equal(left.coords[2], right.coords[0])
+  assert.ok(ids.indexOf('knobpush') > ids.indexOf('knobright'))
+  const box = ui.keyBox(push)
+  assert.ok(Math.abs(box.w - box.h) < 1e-6)
+})

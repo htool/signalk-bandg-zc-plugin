@@ -62,6 +62,78 @@ test('plot short press uses longpress event', () => {
   assert.equal(pgns[0]['Key Event'], 128)
 })
 
+test('dial turns emit the same 65332 Up/Down keys as the arrows', () => {
+  const left = n2k.pgnsForAction('knobleft', 'released', '1d', 1000, 1100)
+  const up = n2k.pgnsForAction('up', 'released', '1d', 1000, 1100)
+  assert.deepEqual(left, up)
+  assert.equal(left[0].Key, 82)
+  assert.equal(n2k.toPgn(left[0]).toString('hex'), n2k.toPgn(up[0]).toString('hex'))
+  const right = n2k.pgnsForAction('knobright', 'released', '1d', 1000, 1100)
+  const down = n2k.pgnsForAction('down', 'released', '1d', 1000, 1100)
+  assert.deepEqual(right, down)
+  assert.equal(right[0].Key, 81)
+  assert.equal(n2k.DIAL_KEY.knobleft, 'up')
+  assert.equal(n2k.DIAL_KEY.knobright, 'down')
+})
+
+test('STBY/AUTO toggles 130850 Standby vs Heading from AP state', () => {
+  const auto = n2k.pgnsForAction('stbyauto', 'pressed', '1f', 0, 10, {
+    address: 0,
+    state: 'standby'
+  })
+  assert.equal(auto.length, 1)
+  assert.equal(auto[0].pgn, 130850)
+  assert.equal(auto[0].prio, 2)
+  assert.equal(auto[0].Address, 0)
+  assert.equal(auto[0].Event, n2k.AP_HEADING_EVENT)
+  assert.equal(n2k.toPgn(auto[0]).toString('hex'), '419f00ffff0a0900ffffffff')
+  const stby = n2k.pgnsForAction('stbyauto', 'pressed', '1f', 0, 10, {
+    address: 13,
+    state: 'auto'
+  })
+  assert.equal(stby[0].Event, n2k.AP_STANDBY_EVENT)
+  assert.equal(stby[0].Address, 13)
+  assert.equal(n2k.toPgn(stby[0]).toString('hex'), '419f0dffff0a0600ffffffff')
+  const up = n2k.pgnsForAction('stbyauto', 'released', '1f', 10, 200, {
+    address: 0,
+    state: 'standby'
+  })
+  assert.equal(up.length, 0)
+})
+
+test('held STBY/AUTO does not emit on release; other keys still emit', () => {
+  const stby = n2k.pgnsForAction('stbyauto', 'released', '1f', 0, 1500)
+  assert.equal(stby.length, 0)
+  const digit = n2k.pgnsForAction('1', 'released', '0a', 0, 1500)
+  assert.equal(digit.length, 2)
+  assert.equal(digit[0]['Key Event'], 179)
+  assert.equal(digit[1]['Key Event'], 51)
+})
+
+test('65305 Mode bits become standby or auto', () => {
+  assert.equal(
+    n2k.pilotStateFrom65305({ pgn: 65305, src: 0, fields: { Report: 10, Mode: 0x0a } }),
+    'standby'
+  )
+  assert.equal(
+    n2k.pilotStateFrom65305({ pgn: 65305, src: 0, fields: { Report: 10, Mode: 0x16 } }),
+    'auto'
+  )
+  assert.equal(
+    n2k.pilotStateFrom65305({ pgn: 65305, fields: { report: 'Mode', mode: ['Heading'] } }),
+    'auto'
+  )
+  assert.equal(
+    n2k.pilotStateFrom65305({ pgn: 65305, fields: { Report: 10, Mode: ['bit 1', 'Standby'] } }),
+    'standby'
+  )
+  assert.equal(
+    n2k.pilotStateFrom65305({ pgn: 65305, fields: { Report: 3, Mode: 0x16 } }),
+    undefined
+  )
+  assert.equal(n2k.pilotStateFrom65305({ pgn: 65280 }), undefined)
+})
+
 test('announce is four JSON 130845 objects', () => {
   const pgns = n2k.announcePgns()
   assert.equal(pgns.length, 4)
@@ -73,12 +145,14 @@ test('announce is four JSON 130845 objects', () => {
   assert.equal(pgns[0].Key, 0x004a2f)
 })
 
-test('custom PGNs are 65332 key/knob and Navico 65280, not 130845', () => {
+test('custom PGNs are 65332 key/knob, Navico 65280, and AP 130850', () => {
   const defs = n2k.CUSTOM_PGNS
   assert.deepEqual(defs.map(function (p) { return p.Id }), [
     'simnetZcKey',
     'simnetZcKnob',
-    'navicoDeviceStatus'
+    'navicoDeviceStatus',
+    'simnetCommandApStandby',
+    'simnetCommandApHeading'
   ])
   assert.equal(defs.filter(function (p) { return p.PGN === 130845 }).length, 0)
   const status = defs.filter(function (p) { return p.PGN === 65280 })[0]
