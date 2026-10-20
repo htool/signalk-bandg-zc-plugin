@@ -8,7 +8,7 @@
   <META name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <META name="navico-store" content="mfd-insight-store">
   <title>ZC1 remote control</title>
-  <script type="text/javascript" src="zc-ui.js"></script>
+  <script type="text/javascript" src="zc-ui.js?v=20260916dial2"></script>
   <style>
     body {
       margin: 0;
@@ -39,6 +39,28 @@
       overflow: hidden;
       background: #1a1a1a;
       cursor: pointer;
+    }
+    .zc-well.is-unmapped {
+      cursor: default;
+      pointer-events: none;
+    }
+    .zc-well.is-unmapped:after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: #9a9a9a;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .zc-well.is-dial {
+      z-index: 2;
+    }
+    .zc-well.is-circle {
+      border-radius: 50%;
+      z-index: 3;
     }
     .zc-face {
       position: absolute;

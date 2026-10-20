@@ -3,6 +3,8 @@ const n2k = require('../lib/zc-n2k')
 var n2kCallback
 var mfdAddress = ""
 var lastPressTime = 0
+var apAddress = 0xff
+var apState = 'standby'
 
 module.exports = function(app, options) {
   "use strict"
@@ -21,7 +23,10 @@ module.exports = function(app, options) {
   function sendButton(button, action) {
     app.debug('button: %s, action: %s', button, action)
     var now = Date.now()
-    sendPgns(n2k.pgnsForAction(button, action, mfdAddress, lastPressTime, now))
+    sendPgns(n2k.pgnsForAction(button, action, mfdAddress, lastPressTime, now, {
+      address: apAddress,
+      state: apState
+    }))
     lastPressTime = now
   }
 
@@ -74,10 +79,19 @@ module.exports = function(app, options) {
     n2kCallback = (msg) => {
       try {
         var pgn = msg && msg.pgn
+        var nextState
         if ((pgn == 65280 || pgn == '65280') && mfdAddress == "") {
           app.debug('[65280]: %s', JSON.stringify(msg));
           app.debug('Maybe MFD on ID: %d', msg.src);
           mfdAddress = (msg.src).toString(16).padStart(2, '0');
+        }
+        nextState = n2k.pilotStateFrom65305(msg)
+        if (nextState) {
+          apState = nextState
+          if (typeof msg.src === 'number') {
+            apAddress = msg.src
+          }
+          app.debug('AP state %s addr %s', apState, apAddress)
         }
       } catch (e) {
         console.error(e)
